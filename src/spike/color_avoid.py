@@ -5,6 +5,7 @@ import re
 
 time.sleep(1)
 
+
 print("--device init--")
 while True:
     # motor init
@@ -13,11 +14,7 @@ while True:
 
     ser = hub.port.D
 
-    if (
-            ser == None
-            or l_motor == None
-            or motor_steer == None
-    ):
+    if ser == None or l_motor == None or motor_steer == None:
         continue
     ser.mode(hub.port.MODE_FULL_DUPLEX)
     motor_pair = l_motor.pair(hub.port.B.motor)
@@ -28,15 +25,27 @@ while True:
     break
 
 
-def move(throttle, steer):
+# prev_steerで直前にどう動いていたかを受け取り、右（もしくは左） に動いていた場合に逆に動いて進行方向を修正する
+# prev_steer=0: 通常通りの動作 prev_steer!=0: time秒だけに-steerで動く
+
+
+def move(throttle, steer, prev_steer):
     time = 1000
-    #steer を反時計回り（左に曲がる）させたいとき、ステアリングモータのスピードを負にする必要がある
-    if not steer:
-        motor_pair.run_at_speed(-throttle, throttle)
-        motor_steer.run_to_position(0)
+    # steer を反時計回り（左に曲がる）させたいとき、ステアリングモータのスピードを負にする必要がある
+    if not prev_steer:
+        if not steer:
+            motor_pair.run_at_speed(-throttle, throttle)
+            motor_steer.run_to_position(0)
+            return 0
+        else:
+            motor_pair.run_at_speed(-throttle, throttle)
+            motor_steer.run_for_time(time, steer)
+            return steer
     else:
         motor_pair.run_at_speed(-throttle, throttle)
-        motor_steer.run_for_time(time, steer)
+        motor_steer.run_for_time(time, -prev_steer)
+        return 0
+
 
 def stop():
     motor_pair.brake()
@@ -47,11 +56,12 @@ if __name__ == "__main__":
     while True:
         reply = ser.read(10000)
         print(reply)
-        if reply == b'':
+        if reply == b"":
             break
 
     print("--waiting RasPi--")
     end_flag = False
+    prev_steer = 0
     throttle = 0
     steer = 0
 
@@ -63,10 +73,10 @@ if __name__ == "__main__":
             reply = ser.read(8 - len(cmd))
             reply = reply.decode("utf-8")
             cmd = cmd + reply
-            #time.sleep(100/1000)
+            # time.sleep(100/1000)
 
             if len(cmd) >= 8 and cmd[-1:] == "@":
-                cmd_list = cmd.split('@')
+                cmd_list = cmd.split("@")
                 if len(cmd_list) != 2:
                     print(len(cmd_list))
                     cmd = ""
@@ -82,8 +92,8 @@ if __name__ == "__main__":
                 print(steer)
                 break
 
-        move(throttle, steer)
-        #break
+        prev_steer = move(throttle, steer, prev_steer)
+        # break
 
         if end_flag:
             stop()
