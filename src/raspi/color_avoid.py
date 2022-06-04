@@ -7,6 +7,7 @@ import cv2
 
 ser = serial.Serial('/dev/ttyAMA1', 115200)
 speed = 70
+
 #this function calculate throttle and steering using color detection.
 #If object is detected, turn left
 def avoid_object(detect_red, detect_green, speed, steer, correct_flag):
@@ -23,20 +24,21 @@ def avoid_object(detect_red, detect_green, speed, steer, correct_flag):
     return throttle, steer, correct_flag
 
 print("--waiting SPIKE--")
-threshold = 20000#回避動作を開始する画像中の物体の面積
+threshold = 15000#回避動作を開始する画像中の物体の面積
 correct_flag = True
 steer = 0
+cap = cv2.VideoCapture(0)
 
 while True:
 
-    detect_red, detect_green , red_mask, green_mask = color_tracking.detect_sign(threshold)
+    start = time.perf_counter()
+
+    detect_red, detect_green , red_mask, green_mask = color_tracking.detect_sign(threshold, cap)
     throttle, steer, correct_flag = avoid_object(detect_red, detect_green, speed, steer, correct_flag)
 
-    cv2.imshow("red_mask", red_mask)
-    cv2.imshow("green_mask", green_mask)
-
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        break
+    end = time.perf_counter()
+    elapsed_time = end - start
+    print("elapsed_time:{:5f}".format(elapsed_time*1000))
 
     #方向を修正したらcorrect_flagを立て、それ以降ステアリングが０になるまで方向は修正しない
     if steer:
@@ -47,7 +49,6 @@ while True:
     cmd = "{:3d},{:3d}@".format(throttle, steer)
     print("write: {}".format(cmd))
     ser.write(cmd.encode("utf-8"))
-    #time.sleep(100/1000)
 
 ser.write("end@".encode())
 

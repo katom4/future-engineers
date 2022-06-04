@@ -41,7 +41,6 @@ def green_detect(img):
 
 def analysis_blob(binary_img):
     #connectedComponentsWithStatsmはオブジェクト（連結領域）を検出するメソッド
-
     labels = cv2.connectedComponentsWithStats(binary_img)
 
     #ラベルの数（背景もラベリングされるので、オブジェクトの数はlabel[0]-1となる
@@ -73,18 +72,25 @@ def analysis_blob(binary_img):
 
     return area
 
-def detect_sign(threshold):
+def detect_sign(threshold, cap):
+
     is_red = False
     is_green = False
 
-    cap = cv2.VideoCapture(0)
     assert cap.isOpened(), "カメラを認識していません！"
     ret, frame = cap.read()
+    start = time.perf_counter()
     mask_red = red_detect(frame)
     mask_green = green_detect(frame)
+    end = time.perf_counter()
+    print("time: {}[ms]".format((end-start)*1000))
+
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        cv2.destroyAllWindows()
 
     area_red = analysis_blob(mask_red)
     area_green = analysis_blob(mask_green)
+    print("area red: {}, area green: {}".format(area_red, area_green))
 
     #赤の物体と緑の物体の大きい方の面積がthreshold以上ならフラグを立てる
     if not area_red and not area_green:
@@ -120,7 +126,7 @@ def main():
 
         end = time.perf_counter()
         elapsed_time = end - start
-        print("elapsed_time: {}ms".format(elapsed_time*1000))
+        #print("elapsed_time: {}ms".format(elapsed_time*1000))
 
         # 結果表示
         cv2.imshow("Frame", frame)
@@ -134,4 +140,6 @@ def main():
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    main()
+    cap = cv2.VideoCapture(0)
+    while True:
+        detect_sign(20000, cap)
