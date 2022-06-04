@@ -31,14 +31,14 @@ cap = cv2.VideoCapture(0)
 
 while True:
 
-    start = time.perf_counter()
+    #start = time.perf_counter()
 
     detect_red, detect_green , red_mask, green_mask = color_tracking.detect_sign(threshold, cap)
     throttle, steer, correct_flag = avoid_object(detect_red, detect_green, speed, steer, correct_flag)
 
-    end = time.perf_counter()
-    elapsed_time = end - start
-    print("elapsed_time:{:5f}".format(elapsed_time*1000))
+    #end = time.perf_counter()
+    #elapsed_time = end - start
+    #print("elapsed_time:{:5f}".format(elapsed_time*1000))
 
     #方向を修正したらcorrect_flagを立て、それ以降ステアリングが０になるまで方向は修正しない
     if steer:

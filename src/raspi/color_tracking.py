@@ -78,18 +78,21 @@ def detect_sign(threshold, cap):
     is_green = False
 
     assert cap.isOpened(), "カメラを認識していません！"
+
     ret, frame = cap.read()
-    start = time.perf_counter()
+
     mask_red = red_detect(frame)
     mask_green = green_detect(frame)
-    end = time.perf_counter()
-    print("time: {}[ms]".format((end-start)*1000))
 
     if cv2.waitKey(25) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
 
+    #start = time.perf_counter()
     area_red = analysis_blob(mask_red)
     area_green = analysis_blob(mask_green)
+    #end = time.perf_counter()
+    #print("time: {}[ms]".format((end-start)*1000))
+
     print("area red: {}, area green: {}".format(area_red, area_green))
 
     #赤の物体と緑の物体の大きい方の面積がthreshold以上ならフラグを立てる
