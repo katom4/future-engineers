@@ -27,25 +27,18 @@ while True:
 
 # prev_steerで直前にどう動いていたかを受け取り、右（もしくは左） に動いていた場合に逆に動いて進行方向を修正する
 # prev_steer=0: 通常通りの動作 prev_steer!=0: time秒だけに-steerで動く
+#sleep_time = 2  # 回避時、進行方向修正時に何ms曲がり続けるか
 
 
-def move(throttle, steer, prev_steer):
-    time = 1000
+def move(throttle, steer):
     # steer を反時計回り（左に曲がる）させたいとき、ステアリングモータのスピードを負にする必要がある
-    if not prev_steer:
-        if not steer:
-            motor_pair.run_at_speed(-throttle, throttle)
-            motor_steer.run_to_position(0)
-            return 0
-        else:
-            motor_pair.run_at_speed(-throttle, throttle)
-            motor_steer.run_for_time(time, steer)
-            return steer
+    if steer == 0:
+        motor_pair.run_at_speed(-throttle, throttle)
+        motor_steer.run_to_position(steer)
     else:
         motor_pair.run_at_speed(-throttle, throttle)
-        motor_steer.run_for_time(time, -prev_steer)
-        return 0
-
+        motor_steer.run_to_position(steer)
+        return steer
 
 def stop():
     motor_pair.brake()
@@ -92,7 +85,7 @@ if __name__ == "__main__":
                 print(steer)
                 break
 
-        prev_steer = move(throttle, steer, prev_steer)
+        prev_steer = move(throttle, steer)
         # break
 
         if end_flag:
