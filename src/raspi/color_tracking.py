@@ -14,8 +14,8 @@ def red_detect(img):
     mask1 = cv2.inRange(hsv, hsv_min, hsv_max)
 
     # 赤色のHSVの値域2
-    hsv_min = np.array([330,127,0])
-    hsv_max = np.array([360,255,255])
+    hsv_min = np.array([165,127,127])
+    hsv_max = np.array([180,255,255])
     mask2 = cv2.inRange(hsv, hsv_min, hsv_max)
 
     return mask1 + mask2
@@ -32,8 +32,8 @@ def green_detect(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # 緑色のHSVの値域
-    hsv_min = np.array([30,127,0])
-    hsv_max = np.array([90,255,255])
+    hsv_min = np.array([30,64,0])
+    hsv_max = np.array([45,255,255])
     mask1 = cv2.inRange(hsv, hsv_min, hsv_max)
 
     return mask1
@@ -94,7 +94,7 @@ def detect_sign(threshold):
     elif area_green > threshold:
         is_green = True
 
-    return is_red, is_green
+    return is_red, is_green, mask_red, mask_green
 
 def main():
     # カメラのキャプチャ
