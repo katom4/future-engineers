@@ -11,13 +11,13 @@ ser = serial.Serial('/dev/ttyAMA1', 115200)
 #If object is detected, turn left
 def avoid_object(detect_red, detect_green):
     if detect_red:
-        throttle = 10
+        throttle = 30
         steer = 100
     elif detect_green:
-        throttle = 10
+        throttle = 30
         steer = -99
     else:
-        throttle = 10
+        throttle = 30
         steer = 0
     return throttle, steer
 
