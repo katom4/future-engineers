@@ -24,17 +24,12 @@ while True:
     time.sleep(1)
     break
 
-
-# prev_steerで直前にどう動いていたかを受け取り、右（もしくは左） に動いていた場合に逆に動いて進行方向を修正する
-# prev_steer=0: 通常通りの動作 prev_steer!=0: time秒だけに-steerで動く
-#sleep_time = 2  # 回避時、進行方向修正時に何ms曲がり続けるか
-
-
 def move(throttle, steer):
-    # steer を反時計回り（左に曲がる）させたいとき、ステアリングモータのスピードを負にする必要がある
+    # steerが0のとき、直進する
     if steer == 0:
         motor_pair.run_at_speed(-throttle, throttle)
         motor_steer.run_to_position(steer)
+    # steerが0でないとき、角度steerだけ曲がる
     else:
         motor_pair.run_at_speed(-throttle, throttle)
         motor_steer.run_to_position(steer)
@@ -46,6 +41,7 @@ def stop():
 
 
 if __name__ == "__main__":
+    #シリアルポートに残っているデータを空にする
     while True:
         reply = ser.read(10000)
         print(reply)
@@ -62,11 +58,9 @@ if __name__ == "__main__":
         cmd = ""
 
         while True:
-
             reply = ser.read(8 - len(cmd))
             reply = reply.decode("utf-8")
             cmd = cmd + reply
-            # time.sleep(100/1000)
 
             if len(cmd) >= 8 and cmd[-1:] == "@":
                 cmd_list = cmd.split("@")
@@ -75,6 +69,7 @@ if __name__ == "__main__":
                     cmd = ""
                     continue
 
+                #"end"を受け取ったとき、終了する
                 if cmd_list[0] == "end":
                     print(" -- end")
                     end_flag = True
@@ -85,9 +80,7 @@ if __name__ == "__main__":
                 print(steer)
                 break
 
-        prev_steer = move(throttle, steer)
-        # break
-
+        #"end"を受け取ったとき、停止して終了する
         if end_flag:
             stop()
             break

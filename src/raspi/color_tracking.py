@@ -1,4 +1,3 @@
- # ここにコードを書いてね :-)
 import cv2
 import numpy as np
 import time
@@ -87,11 +86,8 @@ def detect_sign(threshold, cap):
     if cv2.waitKey(25) & 0xFF == ord('q'):
         cv2.destroyAllWindows()
 
-    #start = time.perf_counter()
     area_red = analysis_blob(mask_red)
     area_green = analysis_blob(mask_green)
-    #end = time.perf_counter()
-    #print("time: {}[ms]".format((end-start)*1000))
 
     print("area red: {}, area green: {}".format(area_red, area_green))
 
@@ -103,16 +99,13 @@ def detect_sign(threshold, cap):
     elif area_green > threshold:
         is_green = True
 
-    return is_red, is_green, mask_red, mask_green
+    return is_red, is_green
 
 def main():
     # カメラのキャプチャ
     cap = cv2.VideoCapture(0)
 
     while(cap.isOpened()):
-        #time.sleep(1)
-        # フレームを取得
-        start = time.perf_counter()
         ret, frame = cap.read()
 
         # 赤色検出
@@ -124,12 +117,7 @@ def main():
         max_blob_red = analysis_blob(mask_red)
         max_blob_green = analysis_blob(mask_green)
 
-        #is_red, is_green = detect_sign(frame)
-        #print("is_red: {}, is_green:{}".format(is_red, is_green))
-
-        end = time.perf_counter()
-        elapsed_time = end - start
-        #print("elapsed_time: {}ms".format(elapsed_time*1000))
+        is_red, is_green = detect_sign(frame)
 
         # 結果表示
         cv2.imshow("Frame", frame)
