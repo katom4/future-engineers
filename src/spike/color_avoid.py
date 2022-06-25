@@ -9,7 +9,7 @@ time.sleep(1)
 print("--device init--")
 while True:
     # motor init
-    l_motor = hub.port.F.motor
+    motor = hub.port.F.motor
     motor_steer = hub.port.E.motor
 
     ser = hub.port.D
@@ -79,6 +79,7 @@ if __name__ == "__main__":
                 steer = int(cmd_list[0].split(",")[1])
                 print(steer)
                 break
+        move(throttle, steer)
 
         #"end"を受け取ったとき、停止して終了する
         if end_flag:

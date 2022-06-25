@@ -5,7 +5,7 @@ import color_tracking
 import cv2
 
 ser = serial.Serial('/dev/ttyAMA1', 115200)
-throttle = 70
+throttle = 20
 
 def avoid_object(detect_red, detect_green):
     if detect_red:
@@ -33,7 +33,7 @@ while True:
 
     #運転の終了
     #if (終了条件):
-        break
+        #break
 
 ser.write("end@".encode())
 
