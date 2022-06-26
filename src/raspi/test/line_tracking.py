@@ -23,9 +23,7 @@ def line_tracking(img,gray_img):
     if type(lines):
         for line in lines:
             x1,y1,x2,y2=line[0]
-            hough = cv2.line(img,(x1,y1),(x2,y2),(0,255,0),3)
-        return hough
-    return img
+            cv2.line(img,(x1,y1),(x2,y2),(0,255,0),3)
 
 def blue_detect(img):
      # HSV色空間に変換
@@ -98,11 +96,12 @@ def curveLine_tracking(img):
 if __name__ == '__main__':
     direction = ""
     cap = cv2.VideoCapture(0)
+    imgl_original = cv2.imread("pic5.png")
     imgl = cv2.imread("pic5.png")
 
     gray = gray_detect(imgl)
 
-    hough = line_tracking(imgl,gray)
+    line_tracking(imgl,gray)
 
     img = cv2.imread("pic6.png")
     line_color, blue, orange = curveLine_tracking(img)
@@ -115,12 +114,20 @@ if __name__ == '__main__':
     else :
         print("none")
 
+    cv2.imshow("imgl_original",imgl_original)
     cv2.imshow("imgl",imgl)
     cv2.imshow("gray",gray)
     cv2.imshow("img",img)
     cv2.imshow("orange",orange)
     cv2.imshow("blue",blue)
     cv2.waitKey(20000)
+
+    """cv2.imwrite("result/imgl_original.png",imgl_original)
+    cv2.imwrite("result/imgl.png",imgl)
+    cv2.imwrite("result/gray.png",gray)
+    cv2.imwrite("result/img.png",img)
+    cv2.imwrite("result/orange.png",orange)
+    cv2.imwrite("result/blue.png",blue)"""
 
     cap.release()
     cv2.destroyAllWindows()
