@@ -7,7 +7,6 @@ time.sleep(1)
 
 print("--device init--")
 while True:
-    break
     # motor init
 
     light_sensor = hub.port.A.device
@@ -15,11 +14,11 @@ while True:
     if light_sensor == None:
         continue
     light_sensor.mode(5)
-    """for mode in port_a.info()["modes"]:
+    for mode in port_a.info()["modes"]:
         print(mode)
         print("\n")
-    break"""
-    while True:
+    break
+    while True
         time.sleep(2)
         print(light_sensor.get(2))
 

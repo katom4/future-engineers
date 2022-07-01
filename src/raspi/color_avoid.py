@@ -22,13 +22,25 @@ steer = 0
 cap = cv2.VideoCapture(0)
 
 while True:
+    s_time = time.perf_counter()
+
+    #receive sensor values(distance)
+    ser.reset_input_buffer()
+    values = ser.read(8).decode("utf-8")
+    value_list = values.split("@")
+
+    #When dist_sensor return None, distance is set to 0.
+    print(value_list[0])
+    #print(int(value_list[0]))
+    #yaw_angle = int(value_list[0])
 
     #面積がthreshold以上の物体（赤、緑）を検出したとき、面積が大きい方の物体をdetect_~をTrueにする
     detect_red, detect_green = color_tracking.detect_sign(threshold, cap)
     throttle, steer = avoid_object(detect_red, detect_green)
+    end_time = time.perf_counter()
 
     cmd = "{:3d},{:3d}@".format(throttle, steer)
-    print("write: {}".format(cmd))
+    print("write: {} elapsed_time:{}[ms]".format(cmd, (end_time-s_time)*1000))
     ser.write(cmd.encode("utf-8"))
 
     #運転の終了
