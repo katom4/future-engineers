@@ -9,14 +9,13 @@ def red_detect(img):
 
     # 赤色のHSVの値域1
     hsv_min = np.array([0,127,0])
-    hsv_max = np.array([15,255,255])
+    hsv_max = np.array([30,255,255])
     mask1 = cv2.inRange(hsv, hsv_min, hsv_max)
 
     # 赤色のHSVの値域2
-    hsv_min = np.array([165,127,127])
+    hsv_min = np.array([150,127,127])
     hsv_max = np.array([180,255,255])
     mask2 = cv2.inRange(hsv, hsv_min, hsv_max)
-
     return mask1 + mask2
 
 def red_detect_rgb(img):
@@ -31,8 +30,8 @@ def green_detect(img):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # 緑色のHSVの値域
-    hsv_min = np.array([30,64,0])
-    hsv_max = np.array([45,255,255])
+    hsv_min = np.array([30,120,50])
+    hsv_max = np.array([90,255,255])
     mask1 = cv2.inRange(hsv, hsv_min, hsv_max)
 
     return mask1
@@ -71,25 +70,32 @@ def analysis_blob(binary_img):
 
     return area
 
-def detect_sign(threshold, cap):
+def detect_sign(threshold, cap, mode=""):
 
     is_red = False
     is_green = False
 
     assert cap.isOpened(), "カメラを認識していません！"
+    ret, f = cap.read()
 
-    ret, frame = cap.read()
+    frame = cv2.rotate(f, cv2.ROTATE_180)
+        # 赤色検出
 
     mask_red = red_detect(frame)
     mask_green = green_detect(frame)
 
+    cv2.imshow("Frame", frame)
+    cv2.imshow("Mask red", mask_red)
+    cv2.imshow("Mask green", mask_green)
+
     if cv2.waitKey(25) & 0xFF == ord('q'):
+
         cv2.destroyAllWindows()
 
     area_red = analysis_blob(mask_red)
     area_green = analysis_blob(mask_green)
 
-    print("area red: {}, area green: {}".format(area_red, area_green))
+    #print("area red: {}, area green: {}".format(area_red, area_green))
 
     #赤の物体と緑の物体の大きい方の面積がthreshold以上ならフラグを立てる
     if not area_red and not area_green:
@@ -98,16 +104,15 @@ def detect_sign(threshold, cap):
         is_red = True
     elif area_green > threshold:
         is_green = True
-
-    return is_red, is_green
+    return is_red, is_green, frame, mask_red, mask_green
 
 def main():
     # カメラのキャプチャ
     cap = cv2.VideoCapture(0)
 
     while(cap.isOpened()):
-        ret, frame = cap.read()
-
+        _, f = cap.read()
+        frame = cv2.rotate(f, cv2.ROTATE_180)
         # 赤色検出
         mask_red = red_detect(frame)
         #緑色検出
@@ -117,12 +122,12 @@ def main():
         max_blob_red = analysis_blob(mask_red)
         max_blob_green = analysis_blob(mask_green)
 
-        is_red, is_green = detect_sign(frame)
+        # is_red, is_green = detect_sign(frame)
 
         # 結果表示
-        cv2.imshow("Frame", frame)
+        """cv2.imshow("Frame", frame)
         cv2.imshow("Mask red", mask_red)
-        cv2.imshow("Mask green", mask_green)
+        cv2.imshow("Mask green", mask_green)"""
         # qキーが押されたら途中終了
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
@@ -132,5 +137,11 @@ def main():
 
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
+    print(cap.set(cv2.CAP_PROP_FPS, 40))
+    print(cap.get(cv2.CAP_PROP_FPS))
     while True:
-        detect_sign(20000, cap)
+        #start = time.perf_counter()
+        is_red, is_green , frame, mask_red, mask_green= detect_sign(20000, cap)
+        #end = time.perf_counter()
+        #print("elapsed_time: {}[us]\n".format((end-start)*1000000))
+
