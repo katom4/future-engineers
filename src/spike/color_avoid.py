@@ -5,43 +5,52 @@ import re
 
 time.sleep(1)
 
-
 print("--device init--")
 while True:
     # motor init
-    l_motor = hub.port.F.motor
+    motor = hub.port.F.motor
     motor_steer = hub.port.E.motor
+
 
     ser = hub.port.D
 
-    if ser == None or l_motor == None or motor_steer == None:
+    if ser==None or motor == None or motor_steer == None :
         continue
     ser.mode(hub.port.MODE_FULL_DUPLEX)
-    motor_pair = l_motor.pair(hub.port.B.motor)
-    print(motor_pair)
+    motor_steer.mode(2)
     time.sleep(2)
     ser.baud(115200)
     time.sleep(1)
     break
 
 def move(throttle, steer):
-    # steerが0のとき、直進する
-    if steer == 0:
-        motor_pair.run_at_speed(-throttle, throttle)
-        motor_steer.run_to_position(steer)
-    # steerが0でないとき、角度steerだけ曲がる
-    else:
-        motor_pair.run_at_speed(-throttle, throttle)
-        motor_steer.run_to_position(steer)
-        return steer
+    while True:
+        if steer >= 0:
+            if motor_steer.get(2)[0] < steer:
+                #print(motor_steer.get(2)[0],steer)
+                #time.sleep(0.1)
+                motor.run_at_speed(-throttle)
+                motor_steer.run_at_speed(30)
+            else:
+                break
+        elif steer < 0:
+            if motor_steer.get(2)[0] > steer:
+                #time.sleep(0.1)
+                motor.run_at_speed(-throttle)
+                motor_steer.run_at_speed(-30)
+            else:
+                break
+
 
 def stop():
-    motor_pair.brake()
+    motor.brake()
     motor_steer.brake()
 
 
 if __name__ == "__main__":
     #シリアルポートに残っているデータを空にする
+    motor_steer.run_to_position(0,10)
+    time.sleep(10)
     while True:
         reply = ser.read(10000)
         print(reply)
@@ -53,11 +62,13 @@ if __name__ == "__main__":
     prev_steer = 0
     throttle = 0
     steer = 0
+    flag = False
 
     while True:
         cmd = ""
 
         while True:
+            #receive operations(throttle, steer)
             reply = ser.read(8 - len(cmd))
             reply = reply.decode("utf-8")
             cmd = cmd + reply
@@ -79,7 +90,20 @@ if __name__ == "__main__":
                 steer = int(cmd_list[0].split(",")[1])
                 print(steer)
                 break
+            move(throttle, steer)
 
+
+            #send distance
+            time.sleep(100/1000)
+            #print("Distance: {}[cm]".format(distance))
+            #time.sleep(1)
+            if distance:
+                ser.write("{:3d}@".format(distance))
+            else:
+                ser.write("{:3d}@".format(0))
+
+            break
+        move(throttle, steer)
         #"end"を受け取ったとき、停止して終了する
         if end_flag:
             stop()
